@@ -39,17 +39,31 @@ export async function registerDepositDetails(
   const results = await Promise.all(
     processors.map(async (processor) => {
       const field = DEPOSIT_DATA_FIELD[processor];
+      const depositData = { [field]: recipientHandle, telegramUsername: "" };
+      const headers = {
+        "Content-Type": "application/json",
+        "x-api-key": apiKey,
+      };
+
+      const validateRes = await fetch(`${PEER_API_BASE}/v1/makers/validate`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ processorName: processor, depositData }),
+      });
+      if (validateRes.ok) {
+        const v = await validateRes.json();
+        if (v.responseObject === false || v.responseObject?.isValid === false) {
+          throw new Error(
+            `invalid ${processor} handle "${recipientHandle}". ` +
+              "check spelling and capitalization (venmo is case-sensitive)"
+          );
+        }
+      }
 
       const res = await fetch(`${PEER_API_BASE}/v1/makers/create`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": apiKey,
-        },
-        body: JSON.stringify({
-          processorName: processor,
-          depositData: { [field]: recipientHandle, telegramUsername: "" },
-        }),
+        headers,
+        body: JSON.stringify({ processorName: processor, depositData }),
       });
 
       if (!res.ok) {
