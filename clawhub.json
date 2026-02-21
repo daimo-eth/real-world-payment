@@ -1,0 +1,12 @@
+{
+  "name": "Real World Payment",
+  "tagline": "Send USD to real people via Venmo, CashApp, Zelle, and more",
+  "description": "An agent skill that lets AI agents pay real people in the real world. Specify a payment provider (Venmo, CashApp, Zelle, PayPal, Wise, Revolut, etc.), recipient handle, and wallet address. The API returns a deposit address — send any stablecoin from any chain. Daimo handles bridging, the PaymentRouter takes a 30bps fee, and Peer Protocol market makers deliver fiat USD to the recipient with ZK-proven settlement.",
+  "category": "finance",
+  "tags": ["payments", "crypto", "fiat", "venmo", "zelle", "stablecoin", "defi"],
+  "version": "0.1.0",
+  "license": "MIT",
+  "pricing": "free",
+  "support_url": "https://github.com/daimo-eth/real-world-payment/issues",
+  "homepage": "https://github.com/daimo-eth/real-world-payment"
+}
