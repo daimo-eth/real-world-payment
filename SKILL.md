@@ -66,7 +66,8 @@ Only send once per deposit address. Multiple sends are not supported. If the bal
 
 IMPORTANT:
 - Do NOT include prefixes like @, $, or # in the handle. Just the raw username, tag, or email.
-- Venmo and Revolut handles are case-sensitive — use the exact capitalization as it appears in the app.
+- Venmo, Revolut, and Chime are case-sensitive — use the exact capitalization as shown in the app.
+- CashApp, PayPal, Zelle, and Wise are NOT case-sensitive.
 
 ### What to tell the user
 
