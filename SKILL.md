@@ -18,12 +18,16 @@ Send USD to real people via Venmo, CashApp, Zelle, PayPal, Wise, Revolut, or Chi
 ```json
 {
   "provider": "venmo",
-  "recipient_handle": "@john",
+  "recipient_handle": "john",
   "sender_address": "0xYourWalletAddress"
 }
 ```
 
-The `sender_address` is the agent's wallet. The API returns a `deposit_address` — send any stablecoin to it to fund the payment.
+The `sender_address` is the agent's wallet. The API returns:
+- `deposit_address` — send tokens here to fund the payment
+- `supported_tokens` — list of tokens the agent can pay with, including `symbol`, `chain_id`, `balance`, and `min_units`
+
+Pick any token from `supported_tokens` where `balance` is sufficient for the desired USD amount. Send that token to `deposit_address`.
 
 ### Providers (always lowercase)
 
