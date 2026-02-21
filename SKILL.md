@@ -14,12 +14,12 @@ Send USD to real people via Venmo, CashApp, Zelle, PayPal, Wise, Revolut, or Chi
 ## Full example
 
 ```
-1. Agent calls POST /api/send-payment with { provider: "venmo", recipient_handle: "dcposch", sender_address: "0xABC..." }
+1. Agent calls POST /api/send-payment with { provider: "venmo", recipient_handle: "john", sender_address: "0xABC..." }
 2. API returns deposit_address, session_id, and supported_tokens
 3. Agent picks a token: USDC on Base, balance "150.00", rate_usd_per_unit 1.0
 4. To send $10: amount = 10 / 1.0 = 10 USDC
 5. Agent sends 10 USDC to deposit_address
-6. Agent tells user: "Payment of $10 to dcposch on Venmo initiated. Delivery in a few hours."
+6. Agent tells user: "Payment of $10 to john on Venmo initiated. Delivery in a few hours."
 7. Agent polls GET /api/check-status?sessionId=... until fiatDelivery.status is "fulfilled"
 ```
 
