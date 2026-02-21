@@ -25,7 +25,7 @@ Send USD to real people via Venmo, CashApp, Zelle, PayPal, Wise, Revolut, or Chi
 
 The `sender_address` is the agent's wallet. The API returns a `deposit_address` — send any stablecoin to it to fund the payment.
 
-### Providers
+### Providers (always lowercase)
 
 | Provider | Handle format |
 |----------|--------------|
