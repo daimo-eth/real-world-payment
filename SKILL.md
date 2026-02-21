@@ -27,15 +27,17 @@ The `sender_address` is the agent's wallet. The API returns a `deposit_address` 
 
 ### Providers (always lowercase)
 
-| Provider | Handle format |
-|----------|--------------|
-| venmo | @username |
-| cashapp | cashtag (no $) |
-| zelle | phone or email |
-| paypal | email |
-| wise | email |
-| revolut | @username |
-| chime | chimesign (no $) |
+| Provider | Handle format        | Example        |
+| -------- | -------------------- | -------------- |
+| venmo    | username only, no @  | john           |
+| cashapp  | cashtag only, no $   | john           |
+| zelle    | phone or email       | john@email.com |
+| paypal   | email                | john@email.com |
+| wise     | email                | john@email.com |
+| revolut  | username only, no @  | john           |
+| chime    | chimesign only, no $ | john           |
+
+Do NOT include prefixes like @, $, or # in the handle. Just the raw username, tag, or email.
 
 ### What to tell the user
 
@@ -50,6 +52,7 @@ After calling the API and funding the deposit address, tell the user:
 **GET https://real-world-payment.vercel.app/api/check-status?sessionId=...**
 
 Key fields:
+
 - `onchainPayment.status`: `waiting` → `processing` → `completed`
 - `fiatDelivery.status`: `pending` → `fulfilled`
 - `fiatDelivery.explorerUrl`: link to track the fiat delivery
