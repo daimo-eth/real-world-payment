@@ -1,0 +1,6 @@
+# Foundry build output
+/out/
+/cache/
+
+# Dependencies (install via forge install)
+/lib/
