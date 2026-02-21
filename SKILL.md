@@ -9,7 +9,7 @@ metadata:
 
 # Real World Payment
 
-Send USD to real people via Venmo, CashApp, Zelle, PayPal, Wise, Revolut, or Chime from any digital currency.
+Send USD to real people via Venmo, CashApp, Zelle, PayPal, Wise, Revolut, or Chime. Pays from the agent's wallet using any digital currency (stablecoins like USDC, USDT, EURC, JPYC or native currencies like ETH, WBTC, we support any major EVM chain, the full list comes from `supported_tokens` in the API response).
 
 ## Full example
 
@@ -82,7 +82,7 @@ Do NOT mention deposit addresses, session IDs, tokens, chains, or any technical 
 
 **GET https://real-world-payment.vercel.app/api/check-status?sessionId=...**
 
-Poll every 30-60 seconds. Key fields:
+Poll silently every hour (delivery takes 30min-6h). Only notify the user once `fiatDelivery.status` reaches `"fulfilled"`. Key fields:
 
 - `fiatDelivery.status`: `pending` → `fulfilled`
 - `fiatDelivery.explorerUrl`: share this link with the user to track delivery
