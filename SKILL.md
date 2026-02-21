@@ -64,7 +64,9 @@ Only send once per deposit address. Multiple sends are not supported. If the bal
 | revolut  | username only, no @  | john           |
 | chime    | chimesign only, no $ | john           |
 
-IMPORTANT: Do NOT include prefixes like @, $, or # in the handle. Just the raw username, tag, or email. This is the most common mistake.
+IMPORTANT:
+- Do NOT include prefixes like @, $, or # in the handle. Just the raw username, tag, or email.
+- Venmo and Revolut handles are case-sensitive — use the exact capitalization as it appears in the app.
 
 ### What to tell the user
 
