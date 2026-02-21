@@ -1,31 +1,19 @@
 ---
 name: real-world-payment
-description: Send USD to a real person via Venmo, CashApp, Zelle, PayPal, Wise, Revolut, or Chime. Returns a deposit address — send any stablecoin from any chain to complete the payment. 80bps fee (30bps protocol + 50bps market maker). Minimum $1. Use when the user asks to pay someone in fiat, send money to a real person, or make a Venmo/CashApp/Zelle payment.
+description: Send USD to a real person via Venmo, CashApp, Zelle, PayPal, Wise, Revolut, or Chime. Use when the user asks to pay someone, send money, or make a Venmo/CashApp/Zelle payment. Minimum $1, 0.8% fee.
+license: MIT
+metadata:
+  author: daimo-eth
+  version: "0.1.0"
 ---
 
 # Real World Payment
 
-Send USD to real people via Venmo, CashApp, Zelle, PayPal, Wise, Revolut, or Chime. Powered by Daimo + Peer Protocol (ZKP2P).
-
-## How it works
-
-1. You call the API with a provider, recipient handle, and agent wallet address
-2. The API returns a deposit address and the agent's token balances
-3. The agent sends any supported stablecoin (any chain) to the deposit address
-4. Daimo bridges to USDC on Base and executes the PaymentRouter contract
-5. The contract takes a 30bps fee and deposits into Peer Protocol escrow
-6. A market maker sends fiat USD to the recipient and proves it with a ZK proof
-7. The escrow releases USDC to the market maker
-
-## API base URL
-
-```
-https://real-world-payment.vercel.app
-```
+Send USD to real people via Venmo, CashApp, Zelle, PayPal, Wise, Revolut, or Chime.
 
 ## Send a payment
 
-**POST /api/send-payment**
+**POST https://real-world-payment.vercel.app/api/send-payment**
 
 ```json
 {
@@ -35,97 +23,43 @@ https://real-world-payment.vercel.app
 }
 ```
 
+The `sender_address` is the agent's wallet. The API returns a `deposit_address` — send any stablecoin to it to fund the payment.
+
 ### Providers
 
-| Provider | Handle format | Fulfillment time |
-|----------|--------------|------------------|
-| venmo | @username | 30min - 2 hours |
-| cashapp | $cashtag | 30min - 2 hours |
-| zelle | phone or email | 1 - 4 hours |
-| paypal | email | 1 - 4 hours |
-| wise | email | 1 - 8 hours |
-| revolut | @username | 1 - 4 hours |
-| chime | $chimesign | 30min - 2 hours |
+| Provider | Handle format |
+|----------|--------------|
+| venmo | @username |
+| cashapp | cashtag (no $) |
+| zelle | phone or email |
+| paypal | email |
+| wise | email |
+| revolut | @username |
+| chime | chimesign (no $) |
 
-### Response
+### What to tell the user
 
-```json
-{
-  "deposit_address": "0x...",
-  "session_id": "abc123...",
-  "expires_at": 1700000000,
-  "supported_tokens": [
-    {
-      "token": "0x...",
-      "chain_id": 8453,
-      "symbol": "USDC",
-      "rate_usd_per_unit": 1.0,
-      "balance": "150.00",
-      "min_units": "1.00",
-      "max_units": "10000.00"
-    }
-  ],
-  "fee_bps": 80,
-  "minimum_usd": 1.0,
-  "estimated_fulfillment": "30min - 2 hours",
-  "warning": "send stablecoin to deposit_address within 1 hour. fiat delivery depends on peer LP availability."
-}
-```
+After calling the API and funding the deposit address, tell the user:
 
-After receiving the response, send the desired amount of any listed token to `deposit_address`. The deposit address expires after 1 hour.
+> Payment of $X to [handle] on [provider] has been initiated.
+> It will be delivered within a few hours.
+> Track status: [explorerUrl from check-status]
 
-## Check payment status
+## Check status
 
-**GET /api/check-status?sessionId=abc123...**
+**GET https://real-world-payment.vercel.app/api/check-status?sessionId=...**
 
-Returns two status fields:
+Key fields:
+- `onchainPayment.status`: `waiting` → `processing` → `completed`
+- `fiatDelivery.status`: `pending` → `fulfilled`
+- `fiatDelivery.explorerUrl`: link to track the fiat delivery
 
-```json
-{
-  "sessionId": "abc123...",
-  "onchainPayment": {
-    "status": "waiting | processing | completed | bounced | expired",
-    "depositAddress": "0x...",
-    "expiresAt": 1700000000,
-    "source": { "chainId": 8453, "token": "USDC", "amount": "10.00", "usdValue": "10.00" },
-    "destination": { "txHash": "0x...", "token": "USDC", "amount": "9.97" }
-  },
-  "fiatDelivery": {
-    "status": "pending | fulfilled",
-    "depositId": "2583",
-    "explorerUrl": "https://peerlytics.xyz/explorer/deposit/..."
-  }
-}
-```
+Once `fiatDelivery.status` is `fulfilled`, the recipient has been paid.
 
-- **onchainPayment.status**: tracks the crypto deposit and bridging
-  - `waiting` — no deposit detected yet
-  - `processing` — deposit detected, bridging to Base
-  - `completed` — USDC arrived on Base, PaymentRouter executed
-  - `bounced` — on-chain execution failed, funds refunded
-  - `expired` — deposit address expired (1 hour window)
-- **fiatDelivery**: tracks the fiat payment to the recipient (null until onchain completes)
-  - `pending` — waiting for a market maker to send fiat
-  - `fulfilled` — fiat delivered, ZK proof submitted
+## Important
 
-Poll every 30-60 seconds after sending funds. On-chain settlement takes 1-10 minutes. Fiat delivery takes 30min - 6 hours depending on LP availability.
-
-## Fees
-
-- Protocol fee: 30bps (0.3%) to treasury
-- Market maker incentive: 50bps (0.5%) to Peer LP
-- Total all-in: 80bps (0.8%)
-- Minimum payment: $1 USD
-
-## When NOT to use
-
-- For crypto-to-crypto transfers (use a DEX or bridge instead)
-- For amounts under $1
-- When the recipient doesn't have the specified payment provider
-- For non-USD currencies (USD only)
-
-## Failure modes
-
-- **Session expired**: Deposit address is valid for 1 hour. Create a new payment if expired.
-- **Bounced**: On-chain execution failed. Funds are refunded to `sender_address`.
-- **No LP liquidity**: If no Peer market maker fills the order, the escrow may time out. Check Peer Protocol docs for escrow timeout behavior.
+- Minimum: $1
+- Fee: 0.8% (deducted automatically)
+- USD only
+- Delivery time: 30 minutes to 6 hours
+- The deposit address expires after 1 hour — fund it promptly
