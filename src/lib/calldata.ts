@@ -1,18 +1,18 @@
-import { encodeFunctionData, keccak256, toHex, type Hex } from "viem";
+import { encodeFunctionData, type Hex } from "viem";
 
 import {
-  FIAT_USD,
   PAYMENT_ROUTER,
   PROVIDER_HASHES,
-  TAKER_RATE,
+  expandProvider,
+  type PeerProcessor,
   type Provider,
 } from "./constants";
 
 const paymentRouterAbi = [
   {
     inputs: [
-      { name: "paymentMethodHash", type: "bytes32" },
-      { name: "payeeDetails", type: "bytes32" },
+      { name: "paymentMethodHashes", type: "bytes32[]" },
+      { name: "payeeDetailsList", type: "bytes32[]" },
     ],
     name: "route",
     outputs: [],
@@ -21,23 +21,19 @@ const paymentRouterAbi = [
   },
 ] as const;
 
-/** Hash a recipient handle (e.g. "@john", "john@email.com") into bytes32 for Peer payeeDetails. */
-export function hashRecipientHandle(handle: string): Hex {
-  return keccak256(toHex(handle));
-}
-
-/** Encode PaymentRouter.route(paymentMethodHash, payeeDetails) calldata. */
+/** Encode PaymentRouter.route(hashes[], payeeDetails[]) calldata. */
 export function encodeRouteCalldata(
   provider: Provider,
-  recipientHandle: string
+  hashedOnchainIds: { processor: PeerProcessor; hashedOnchainId: Hex }[]
 ): Hex {
-  const paymentMethodHash = PROVIDER_HASHES[provider];
-  const payeeDetails = hashRecipientHandle(recipientHandle);
+  const processors = expandProvider(provider);
+  const hashes = processors.map((p) => PROVIDER_HASHES[p]);
+  const payeeDetails = hashedOnchainIds.map((h) => h.hashedOnchainId);
 
   return encodeFunctionData({
     abi: paymentRouterAbi,
     functionName: "route",
-    args: [paymentMethodHash, payeeDetails],
+    args: [hashes, payeeDetails],
   });
 }
 

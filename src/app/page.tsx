@@ -1,18 +1,51 @@
-import { ALL_PROVIDERS } from "@/lib/constants";
+const GREEN = "#009110";
+
+const providers = [
+  "Venmo",
+  "CashApp",
+  "Chime",
+  "Revolut",
+  "Wise",
+  "PayPal",
+  "Zelle",
+];
 
 export default function Home() {
   return (
-    <main style={{ maxWidth: 640, margin: "4rem auto", fontFamily: "system-ui", padding: "0 1rem" }}>
-      <h1 style={{ fontSize: "1.5rem", fontWeight: 700 }}>
-        Real World Payment API
+    <main
+      style={{
+        maxWidth: 640,
+        margin: "4rem auto",
+        fontFamily: "system-ui",
+        padding: "0 1rem",
+      }}
+    >
+      <h1 style={{ fontSize: "1.5rem", fontWeight: 700, color: GREEN }}>
+        Give your Agent Real World Payment
       </h1>
+      <p style={{ color: "#666", marginTop: "0.5rem", lineHeight: 1.6 }}>
+        Let your Agent use its digital currencies from any major blockchain and
+        send <strong style={{ color: GREEN }}>USD</strong> to real people via{" "}
+        {providers.map((p, i) => (
+          <span key={p}>
+            <strong style={{ color: GREEN }}>{p}</strong>
+            {i < providers.length - 1 ? ", " : "."}
+          </span>
+        ))}
+      </p>
       <p style={{ color: "#666", marginTop: "0.5rem" }}>
-        Send USD to real people via {ALL_PROVIDERS.length} payment providers.
-        Powered by Daimo + Peer Protocol.
+        Powered by{" "}
+        <a href="https://daimo.com" style={{ color: GREEN }}>
+          Daimo
+        </a>{" "}
+        and{" "}
+        <a href="https://peer.xyz" style={{ color: GREEN }}>
+          Peer
+        </a>
       </p>
 
       <h2 style={{ fontSize: "1.1rem", fontWeight: 600, marginTop: "2rem" }}>
-        POST /api/send-payment
+        Install
       </h2>
       <pre
         style={{
@@ -23,30 +56,25 @@ export default function Home() {
           fontSize: "0.85rem",
         }}
       >
-        {JSON.stringify(
-          {
-            provider: "venmo",
-            recipient_handle: "@john",
-            sender_address: "0x...",
-          },
-          null,
-          2
-        )}
+        npx skills add daimo-eth/real-world-payment
+      </pre>
+      <pre
+        style={{
+          background: "#f5f5f5",
+          padding: "1rem",
+          borderRadius: 8,
+          overflow: "auto",
+          fontSize: "0.85rem",
+          marginTop: "0.5rem",
+        }}
+      >
+        clawhub install daimo-eth/real-world-payment
       </pre>
 
-      <h2 style={{ fontSize: "1.1rem", fontWeight: 600, marginTop: "2rem" }}>
-        GET /api/check-status?sessionId=...
-      </h2>
-      <p style={{ color: "#666" }}>Poll for settlement status.</p>
-
-      <h2 style={{ fontSize: "1.1rem", fontWeight: 600, marginTop: "2rem" }}>
-        Supported providers
-      </h2>
-      <ul style={{ columns: 2, fontSize: "0.9rem" }}>
-        {ALL_PROVIDERS.map((p) => (
-          <li key={p}>{p}</li>
-        ))}
-      </ul>
+      <p style={{ color: "#999", fontSize: "0.8rem", marginTop: "2rem" }}>
+        80bps total fee (30bps routing + 50bps market maker) · Minimum $1 ·
+        destination USD only
+      </p>
     </main>
   );
 }

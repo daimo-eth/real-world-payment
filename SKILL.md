@@ -1,11 +1,11 @@
 ---
 name: real-world-payment
-description: Send USD to a real person via Venmo, CashApp, Zelle, PayPal, Wise, Revolut, or other providers. Returns a deposit address — send any stablecoin from any chain to complete the payment. 80bps fee (30bps protocol + 50bps market maker). Minimum $1. Use when the user asks to pay someone in fiat, send money to a real person, or make a Venmo/CashApp/Zelle payment.
+description: Send USD to a real person via Venmo, CashApp, Zelle, PayPal, Wise, Revolut, or Chime. Returns a deposit address — send any stablecoin from any chain to complete the payment. 80bps fee (30bps protocol + 50bps market maker). Minimum $1. Use when the user asks to pay someone in fiat, send money to a real person, or make a Venmo/CashApp/Zelle payment.
 ---
 
 # Real World Payment
 
-Send USD to real people via Venmo, CashApp, Zelle, PayPal, Wise, Revolut, Monzo, N26, Alipay, MercadoPago, or Chime. Powered by Daimo + Peer Protocol (ZKP2P).
+Send USD to real people via Venmo, CashApp, Zelle, PayPal, Wise, Revolut, or Chime. Powered by Daimo + Peer Protocol (ZKP2P).
 
 ## How it works
 
@@ -41,17 +41,11 @@ https://real-world-payment.vercel.app
 |----------|--------------|------------------|
 | venmo | @username | 30min - 2 hours |
 | cashapp | $cashtag | 30min - 2 hours |
-| zelle-chase | phone or email | 1 - 4 hours |
-| zelle-citi | phone or email | 1 - 4 hours |
-| zelle-bofa | phone or email | 1 - 4 hours |
+| zelle | phone or email | 1 - 4 hours |
 | paypal | email | 1 - 4 hours |
 | wise | email | 1 - 8 hours |
 | revolut | @username | 1 - 4 hours |
 | chime | $chimesign | 30min - 2 hours |
-| monzo | email or phone | 1 - 4 hours |
-| n26 | email | 1 - 4 hours |
-| alipay | phone or email | 1 - 4 hours |
-| mercadopago | phone or email | 1 - 4 hours |
 
 ### Response
 
@@ -84,9 +78,37 @@ After receiving the response, send the desired amount of any listed token to `de
 
 **GET /api/check-status?sessionId=abc123...**
 
-Returns the current session status: `pending`, `processing`, `completed`, or `bounced`.
+Returns two status fields:
 
-Poll every 30-60 seconds after sending funds. Settlement typically takes 10-30 minutes for the on-chain portion, plus the provider-specific fulfillment time for fiat delivery.
+```json
+{
+  "sessionId": "abc123...",
+  "onchainPayment": {
+    "status": "waiting | processing | completed | bounced | expired",
+    "depositAddress": "0x...",
+    "expiresAt": 1700000000,
+    "source": { "chainId": 8453, "token": "USDC", "amount": "10.00", "usdValue": "10.00" },
+    "destination": { "txHash": "0x...", "token": "USDC", "amount": "9.97" }
+  },
+  "fiatDelivery": {
+    "status": "pending | fulfilled",
+    "depositId": "2583",
+    "explorerUrl": "https://peerlytics.xyz/explorer/deposit/..."
+  }
+}
+```
+
+- **onchainPayment.status**: tracks the crypto deposit and bridging
+  - `waiting` — no deposit detected yet
+  - `processing` — deposit detected, bridging to Base
+  - `completed` — USDC arrived on Base, PaymentRouter executed
+  - `bounced` — on-chain execution failed, funds refunded
+  - `expired` — deposit address expired (1 hour window)
+- **fiatDelivery**: tracks the fiat payment to the recipient (null until onchain completes)
+  - `pending` — waiting for a market maker to send fiat
+  - `fulfilled` — fiat delivered, ZK proof submitted
+
+Poll every 30-60 seconds after sending funds. On-chain settlement takes 1-10 minutes. Fiat delivery takes 30min - 6 hours depending on LP availability.
 
 ## Fees
 

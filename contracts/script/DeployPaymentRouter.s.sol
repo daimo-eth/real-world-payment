@@ -16,6 +16,9 @@ contract DeployPaymentRouter is Script {
         address usdc = vm.envOr("USDC", BASE_MAINNET_USDC);
         address peerEscrow = vm.envOr("PEER_ESCROW", PEER_ESCROW);
         address treasury = vm.envOr("TREASURY", TREASURY);
+        address gatingService = vm.envOr(
+            "INTENT_GATING_SERVICE", INTENT_GATING_SERVICE
+        );
 
         vm.startBroadcast();
 
@@ -23,13 +26,14 @@ contract DeployPaymentRouter is Script {
             DEPLOY_SALT_PAYMENT_ROUTER,
             abi.encodePacked(
                 type(PaymentRouter).creationCode,
-                abi.encode(usdc, peerEscrow, treasury)
+                abi.encode(usdc, peerEscrow, treasury, gatingService)
             )
         );
         console.log("PaymentRouter deployed at:", paymentRouter);
         console.log("  usdc:", usdc);
         console.log("  peerEscrow:", peerEscrow);
         console.log("  treasury:", treasury);
+        console.log("  gatingService:", gatingService);
 
         vm.stopBroadcast();
     }

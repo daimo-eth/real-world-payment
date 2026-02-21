@@ -8,9 +8,11 @@ import {
   FULFILLMENT_TIMES,
   MIN_USD,
   TOTAL_FEE_BPS,
+  expandProvider,
   type Provider,
 } from "@/lib/constants";
 import { createDeposit, getDepositTokens } from "@/lib/daimo";
+import { registerDepositDetails } from "@/lib/peer";
 
 const requestSchema = z.object({
   provider: z.enum(ALL_PROVIDERS as [Provider, ...Provider[]]),
@@ -36,7 +38,14 @@ export async function POST(req: Request) {
   const senderAddr = getAddress(sender_address);
 
   try {
-    const calldata = encodeRouteCalldata(provider, recipient_handle);
+    const processors = expandProvider(provider);
+
+    const registrations = await registerDepositDetails(
+      processors,
+      recipient_handle
+    );
+
+    const calldata = encodeRouteCalldata(provider, registrations);
 
     const deposit = await createDeposit({
       destinationAddress: PAYMENT_ROUTER,

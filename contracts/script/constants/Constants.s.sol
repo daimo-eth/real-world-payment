@@ -16,3 +16,6 @@ address constant PEER_ESCROW = 0x2f121CDDCA6d652f35e8B3E560f9760898888888;
 
 // Protocol fee treasury
 address constant TREASURY = 0x4E04D236A5aEd4EB7d95E0514c4c8394c690BB58;
+
+// Peer intent gating service on Base (from getGatingServiceAddress(8453, 'production'))
+address constant INTENT_GATING_SERVICE = 0x396D31055Db28C0C6f36e8b36f18FE7227248a97;

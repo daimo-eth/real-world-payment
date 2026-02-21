@@ -80,11 +80,28 @@ export async function getDepositTokens(
   );
 }
 
+export interface DepositStatusSource {
+  txHash: string | null;
+  chainId: number;
+  tokenSymbol: string;
+  amountUnits: string;
+  usdValue: string;
+}
+
+export interface DepositStatusDest {
+  txHash: string | null;
+  chainId: number;
+  tokenSymbol: string;
+  amountUnits: string;
+}
+
 export interface DepositStatus {
   sessionId: string;
   status: string;
   depositAddress: string;
   expiresAt: number;
+  source?: DepositStatusSource;
+  destination?: DepositStatusDest;
 }
 
 /** Poll session status. */

@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Real World Payment — Daimo",
   description:
-    "Send USD to real people via Venmo, CashApp, Zelle, and more. Powered by Daimo + Peer Protocol.",
+    "Let your AI agent send USD to real people via Venmo, CashApp, Zelle, and more. Powered by Daimo + Peer Protocol.",
 };
 
 export default function RootLayout({
