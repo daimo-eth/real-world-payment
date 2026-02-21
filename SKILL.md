@@ -9,18 +9,18 @@ metadata:
 
 # Real World Payment
 
-Send USD to real people via Venmo, CashApp, Zelle, PayPal, Wise, Revolut, or Chime.
+Send USD to real people via Venmo, CashApp, Zelle, PayPal, Wise, Revolut, or Chime from any digital currency.
 
 ## Full example
 
 ```
 1. Agent calls POST /api/send-payment with { provider: "venmo", recipient_handle: "john", sender_address: "0xABC..." }
 2. API returns deposit_address, session_id, and supported_tokens
-3. Agent picks a token: USDC on Base, balance "150.00", rate_usd_per_unit 1.0
-4. To send $10: amount = 10 / 1.0 = 10 USDC
-5. Agent sends 10 USDC to deposit_address
-6. Agent tells user: "Payment of $10 to john on Venmo initiated. Delivery in a few hours."
-7. Agent polls GET /api/check-status?sessionId=... until fiatDelivery.status is "fulfilled"
+3. Agent picks a digital currency with sufficient balance, calculates amount: usd_amount / rate_usd_per_unit
+4. Agent sends the digital currency to deposit_address
+5. Agent tells user: "$10 is being sent to john on Venmo. Track delivery: [explorerUrl]"
+6. Agent polls check-status until fiatDelivery.status is "fulfilled"
+7. Agent tells user: "$10 has been delivered to john on Venmo."
 ```
 
 ## Send a payment
@@ -35,22 +35,20 @@ Send USD to real people via Venmo, CashApp, Zelle, PayPal, Wise, Revolut, or Chi
 }
 ```
 
-The `sender_address` is the agent's wallet. The API returns:
-- `deposit_address` — send tokens here to fund the payment
-- `supported_tokens` — list of tokens the agent can pay with, including `symbol`, `chain_id`, `balance`, `rate_usd_per_unit`, and `min_units`
+The API returns:
 
-### Choosing a token and calculating the amount
+- `deposit_address` — send funds here to complete the payment
+- `session_id` — use to check status
+- `supported_tokens` — tokens the agent can pay with (pick one with sufficient `balance`)
+
+### Choosing a token and amount
 
 ```
 amount_to_send = usd_amount / rate_usd_per_unit
 ```
 
-For example, to send $2 using EURC at rate 1.17: send 2 / 1.17 = ~1.71 EURC.
-For stablecoins like USDC (rate 1.0): send the exact USD amount.
-
-Prefer tokens on the same chain as the agent's wallet to avoid bridging delays.
-
-Only send once per deposit address. Multiple sends are not supported. If the balance of one token is not enough, pick a different token with sufficient balance.
+Prefer tokens with `rate_usd_per_unit` of 1.0 (stablecoins) — the USD amount equals the send amount.
+Only send once per deposit address.
 
 ### Providers (always lowercase)
 
@@ -65,36 +63,39 @@ Only send once per deposit address. Multiple sends are not supported. If the bal
 | chime    | chimesign only, no $ | john           |
 
 IMPORTANT:
+
 - Do NOT include prefixes like @, $, or # in the handle. Just the raw username, tag, or email.
 - Venmo, Revolut, and Chime are case-sensitive — use the exact capitalization as shown in the app.
 - CashApp, PayPal, Zelle, and Wise are NOT case-sensitive.
 
 ### What to tell the user
 
-After calling the API and funding the deposit address, tell the user:
+After funding the deposit address, tell the user:
 
-> Payment of $X to [handle] on [provider] has been initiated.
-> It will be delivered within a few hours.
-> Track status: [explorerUrl from check-status]
+> $X is being sent to [handle] on [provider].
+> Delivery typically takes 30 minutes to 6 hours.
+> Track delivery: [explorerUrl from check-status]
+
+Do NOT mention deposit addresses, session IDs, tokens, chains, or any technical details to the user. Just confirm the money is being sent.
 
 ## Check status
 
 **GET https://real-world-payment.vercel.app/api/check-status?sessionId=...**
 
-Key fields:
+Poll every 30-60 seconds. Key fields:
 
-- `onchainPayment.status`: `waiting` → `processing` → `completed`
 - `fiatDelivery.status`: `pending` → `fulfilled`
-- `fiatDelivery.explorerUrl`: link to track the fiat delivery
+- `fiatDelivery.explorerUrl`: share this link with the user to track delivery
 
-Once `fiatDelivery.status` is `fulfilled`, the recipient has been paid.
+Once `fiatDelivery.status` is `fulfilled`, tell the user:
+
+> $X has been delivered to [handle] on [provider].
 
 ## Common errors
 
-- **500 from send-payment**: usually a bad handle. Double-check there are no @, $, or # prefixes and the handle exists on the provider.
-- **Amount too low**: minimum is $1. If you send less, the transaction will revert and funds are refunded to `sender_address`.
-- **Deposit expired**: the deposit address is valid for 1 hour. If expired, create a new payment.
-- **Bounced**: on-chain execution failed. Funds are refunded to `sender_address`.
+- **Invalid handle**: the API returns a clear error if the handle doesn't exist. Check spelling and capitalization.
+- **Insufficient funds**: minimum is $1.
+- **Expired**: the payment window is 1 hour. Create a new payment if expired.
 
 ## Important
 
@@ -102,4 +103,4 @@ Once `fiatDelivery.status` is `fulfilled`, the recipient has been paid.
 - Fee: 0.8% (deducted automatically)
 - USD only
 - Delivery time: 30 minutes to 6 hours
-- One send per deposit address — do not send multiple transactions
+- One payment per request — do not reuse deposit addresses

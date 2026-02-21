@@ -31,7 +31,7 @@ export interface DepositRegistration {
  *  Returns hashedOnchainId per processor (used as payeeDetails on-chain). */
 export async function registerDepositDetails(
   processors: PeerProcessor[],
-  recipientHandle: string
+  recipientHandle: string,
 ): Promise<DepositRegistration[]> {
   const apiKey = process.env.PEER_API_KEY;
   if (!apiKey) throw new Error("PEER_API_KEY env var required");
@@ -55,7 +55,7 @@ export async function registerDepositDetails(
         if (v.responseObject === false || v.responseObject?.isValid === false) {
           throw new Error(
             `invalid ${processor} handle "${recipientHandle}". ` +
-              "check spelling and capitalization (venmo is case-sensitive)"
+              "check spelling and capitalization (venmo is case-sensitive)",
           );
         }
       }
@@ -69,14 +69,14 @@ export async function registerDepositDetails(
       if (!res.ok) {
         const text = await res.text();
         throw new Error(
-          `peer api failed for ${processor} (${res.status}): ${text}`
+          `peer api failed for ${processor} (${res.status}): ${text}`,
         );
       }
 
       const data = await res.json();
       if (!data.success || !data.responseObject?.hashedOnchainId) {
         throw new Error(
-          `peer api returned no hashedOnchainId for ${processor}: ${JSON.stringify(data)}`
+          `peer api returned no hashedOnchainId for ${processor}: ${JSON.stringify(data)}`,
         );
       }
 
@@ -84,7 +84,7 @@ export async function registerDepositDetails(
         processor,
         hashedOnchainId: data.responseObject.hashedOnchainId as Hex,
       };
-    })
+    }),
   );
 
   return results;
@@ -108,7 +108,7 @@ const DEPOSIT_QUERY = `
 /** Query Peer indexer for fiat delivery status. */
 export async function getFiatDeliveryStatus(
   escrowAddress: string,
-  depositId: string
+  depositId: string,
 ): Promise<FiatDeliveryStatus | null> {
   const compositeId = `${escrowAddress.toLowerCase()}_${depositId}`;
 
